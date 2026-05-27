@@ -12,6 +12,7 @@ public class UserProfile
     public EmploymentType EmploymentType {get;set;}
     public bool CanEarnOvertime {get;set;}
     public decimal? TakeHomePayPerPayPeriod {get;set;}
+    public HourlyPayEstimationMode? HourlyPayEstimationMode {get;set;}
     public GoalType PrimaryGoal {get;set;}
     public DateTime CreatedAt {get;set;} = DateTime.Now; // using DateTime.Now instead of .UTC due to it being locally hosted sqlite database.
     public DateTime UpdatedAt {get;set;} = DateTime.Now;

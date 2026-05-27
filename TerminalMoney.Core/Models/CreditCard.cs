@@ -9,6 +9,7 @@ public class CreditCard
     public UserProfile? UserProfile {get;set;}
     public string Name {get; set;} = string.Empty;
     public decimal CurrentBalance {get; set;}
+    public decimal CreditLimit {get;set;}
     public decimal MinimumPayment {get;set;}
     public decimal InterestRateApr {get;set;}
 }
