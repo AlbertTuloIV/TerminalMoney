@@ -42,9 +42,9 @@ public enum DebtType
 {
     PersonalLoan = 1,
     AutoLoan = 2,
-    StudentLoad = 3,
+    StudentLoan = 3,
     Mortage = 4,
-    MedicalDebpt = 5,
+    MedicalDept = 5,
     Other = 6
 }
 
