@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="TerminalMoney.Cli/TerminalMoney.Cli.csproj" />
+  <Project Path="TerminalMoney.Core/TerminalMoney.Core.csproj" />
+  <Project Path="TerminalMoney.Data/TerminalMoney.Data.csproj" />
+</Solution>
