@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Spectre.Console;
 using TM.Cli.Setup;
+using TM.Cli.Simulations;
 using TM.Data.Persistence;
 
 AnsiConsole.Write(
@@ -8,15 +9,16 @@ AnsiConsole.Write(
         .Centered()
         .Color(Color.DeepSkyBlue1));
 
-AnsiConsole.MarkupLine("[bold hotpink]Welcome to your terminal budgetting app![/]");
+AnsiConsole.MarkupLine("[bold hotpink]Welcome to your terminal budgeting app![/]");
 
 await using var dbContext = TMDbContextFactory.Create();
 await dbContext.Database.MigrateAsync();
 
 var setupWizard = new SetupWizard(dbContext);
 var settingsMenu = new SettingsMenu(dbContext, setupWizard);
+var simulationMenu = new SimulationMenu(dbContext);
 
-if(!await setupWizard.HasCompletedSetupAsync())
+if (!await setupWizard.HasCompletedSetupAsync())
 {
     await setupWizard.RunInitialSetupAsync();
 }
@@ -28,6 +30,7 @@ while (true)
             .Title("What do you want to do?")
             .AddChoices([
                 "Dashboard",
+                "Simulation",
                 "Settings",
                 "Exit"
             ]));
@@ -36,6 +39,9 @@ while (true)
     {
         case "Dashboard":
             await settingsMenu.ShowCurrentSetupAsync();
+            break;
+        case "Simulation":
+            await simulationMenu.ShowAsync();
             break;
         case "Settings":
             await settingsMenu.ShowAsync();

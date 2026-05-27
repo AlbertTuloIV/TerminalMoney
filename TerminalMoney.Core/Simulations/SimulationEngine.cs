@@ -115,9 +115,16 @@ public static class SimulationEngine
             .ThenBy(x => x.Name)
             .ToList();
 
+        var monthlyDebtPaymentBudget = RoundMoney(input.MonthlyIncome - input.MonthlyLivingExpenses);
+        var initialMonthlyMinimumDebtPayments = GetTotalMinimumPaymentDue(debts);
+        var initialMonthlySnowballExtra = RoundMoney(Math.Max(0, monthlyDebtPaymentBudget - initialMonthlyMinimumDebtPayments));
+
         var result = new DebtSnowballSimulationResult
         {
-            MonthlyAvailableForDebt = RoundMoney(input.MonthlyIncome - input.MonthlyLivingExpenses),
+            MonthlyAvailableForDebt = initialMonthlySnowballExtra,
+            MonthlyDebtPaymentBudget = monthlyDebtPaymentBudget,
+            InitialMonthlyMinimumDebtPayments = initialMonthlyMinimumDebtPayments,
+            InitialMonthlySnowballExtra = initialMonthlySnowballExtra,
             StartingDebtTotal = RoundMoney(debts.Sum(x => x.Balance))
         };
 
@@ -128,10 +135,18 @@ public static class SimulationEngine
             return result;
         }
 
-        if (result.MonthlyAvailableForDebt <= 0)
+        if (monthlyDebtPaymentBudget <= 0)
         {
             result.CanReachGoal = false;
             result.Message = "There is no monthly money available for debt after living expenses.";
+            result.EndingDebtTotal = result.StartingDebtTotal;
+            return result;
+        }
+
+        if (monthlyDebtPaymentBudget < initialMonthlyMinimumDebtPayments)
+        {
+            result.CanReachGoal = false;
+            result.Message = $"Your monthly debt budget does not cover your minimum debt payments. Minimums are {initialMonthlyMinimumDebtPayments:C}, but only {monthlyDebtPaymentBudget:C} is available after living expenses.";
             result.EndingDebtTotal = result.StartingDebtTotal;
             return result;
         }
@@ -147,7 +162,7 @@ public static class SimulationEngine
         for (var month = 1; month <= input.MaxMonths && !HasReachedDebtGoal(debts, input.SpecificDebtKey); month++)
         {
             var activeDebts = GetActiveDebts(debts);
-            var availableForDebt = result.MonthlyAvailableForDebt;
+            var availableForDebt = monthlyDebtPaymentBudget;
             var monthPlan = new DebtSnowballMonthPlan
             {
                 MonthNumber = month,
@@ -178,6 +193,8 @@ public static class SimulationEngine
             PaySnowballExtra(debts, monthPlan, ref availableForDebt);
 
             monthPlan.TotalInterestCharged = RoundMoney(monthPlan.Payments.Sum(x => x.InterestCharged));
+            monthPlan.MinimumDebtPayments = RoundMoney(monthPlan.Payments.Sum(x => x.MinimumPayment));
+            monthPlan.SnowballExtraPayment = RoundMoney(monthPlan.Payments.Sum(x => x.ExtraPayment));
             monthPlan.TotalDebtPaid = RoundMoney(monthPlan.Payments.Sum(x => x.MinimumPayment + x.ExtraPayment));
             monthPlan.RemainingDebt = RoundMoney(debts.Sum(x => x.Balance));
 
@@ -260,10 +277,14 @@ public static class SimulationEngine
     {
         return debts
             .Where(x => x.Balance > 0)
-            .OrderBy(x => x.Priority)
-            .ThenByDescending(x => x.Balance)
-            .ThenBy(x => x.Name)
             .ToList();
+    }
+
+    private static decimal GetTotalMinimumPaymentDue(IEnumerable<SimulatedDebt> debts)
+    {
+        return RoundMoney(debts
+            .Where(x => x.Balance > 0)
+            .Sum(x => Math.Min(x.MinimumMonthlyPayment, x.Balance)));
     }
 
     private static SimulatedDebt CloneDebt(SimulatedDebt debt)

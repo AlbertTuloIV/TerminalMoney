@@ -52,6 +52,9 @@ public class DebtSnowballSimulationResult
     public string Message {get;set;} = string.Empty;
     public int MonthsToGoal {get;set;}
     public decimal MonthlyAvailableForDebt {get;set;}
+    public decimal MonthlyDebtPaymentBudget {get;set;}
+    public decimal InitialMonthlyMinimumDebtPayments {get;set;}
+    public decimal InitialMonthlySnowballExtra {get;set;}
     public decimal StartingDebtTotal {get;set;}
     public decimal EndingDebtTotal {get;set;}
     public List<DebtSnowballMonthPlan> Months {get;set;} = [];
@@ -63,6 +66,8 @@ public class DebtSnowballMonthPlan
     public decimal MonthlyIncome {get;set;}
     public decimal LivingExpenses {get;set;}
     public decimal AvailableForDebt {get;set;}
+    public decimal MinimumDebtPayments {get;set;}
+    public decimal SnowballExtraPayment {get;set;}
     public decimal TotalInterestCharged {get;set;}
     public decimal TotalDebtPaid {get;set;}
     public decimal RemainingDebt {get;set;}
