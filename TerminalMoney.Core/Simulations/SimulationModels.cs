@@ -4,6 +4,7 @@ public class SavingsSimulationInput
 {
     public decimal MonthlyIncome { get; set; }
     public decimal MonthlyLivingExpenses { get; set; }
+    public decimal MonthlyDebtPayments { get; set; }
     public decimal StartingSavings { get; set; }
     public decimal TargetSavings { get; set; }
     public int MaxMonths { get; set; } = 600;
@@ -14,6 +15,8 @@ public class SavingsSimulationResult
     public bool CanReachGoal {get;set;}
     public string Message {get;set;} = string.Empty;
     public int MonthsToGoal {get;set;}
+    public decimal MonthlyDebtPayments {get;set;}
+    public decimal TotalMonthlyExpenses {get;set;}
     public decimal MonthlyAvailableForSavings {get;set;}
     public List<SavingsMonthPlan> Months {get;set;} = [];
 }

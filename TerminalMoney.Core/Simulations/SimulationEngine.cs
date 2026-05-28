@@ -60,9 +60,14 @@ public static class SimulationEngine
     }
     public static SavingsSimulationResult RunSavingsSimulation(SavingsSimulationInput input)
     {
+        var monthlyDebtPayments = RoundMoney(input.MonthlyDebtPayments);
+        var totalMonthlyExpenses = RoundMoney(input.MonthlyLivingExpenses + monthlyDebtPayments);
+
         var result = new SavingsSimulationResult
         {
-            MonthlyAvailableForSavings = RoundMoney(input.MonthlyIncome - input.MonthlyLivingExpenses)
+            MonthlyDebtPayments = monthlyDebtPayments,
+            TotalMonthlyExpenses = totalMonthlyExpenses,
+            MonthlyAvailableForSavings = RoundMoney(input.MonthlyIncome - totalMonthlyExpenses)
         };
 
         if (input.TargetSavings <= input.StartingSavings)
@@ -75,7 +80,7 @@ public static class SimulationEngine
         if (result.MonthlyAvailableForSavings <= 0)
         {
             result.CanReachGoal = false;
-            result.Message = "This goal cannot be reached with the current monthly income and living expenses.";
+            result.Message = "This goal cannot be reached with the current monthly income, living expenses, and minimum debt payments.";
             return result;
         }
 
@@ -116,7 +121,7 @@ public static class SimulationEngine
             .ToList();
 
         var monthlyDebtPaymentBudget = RoundMoney(input.MonthlyIncome - input.MonthlyLivingExpenses);
-        var initialMonthlyMinimumDebtPayments = GetTotalMinimumPaymentDue(debts);
+        var initialMonthlyMinimumDebtPayments = CalculateMinimumMonthlyDebtPayments(debts);
         var initialMonthlySnowballExtra = RoundMoney(Math.Max(0, monthlyDebtPaymentBudget - initialMonthlyMinimumDebtPayments));
 
         var result = new DebtSnowballSimulationResult
@@ -280,7 +285,7 @@ public static class SimulationEngine
             .ToList();
     }
 
-    private static decimal GetTotalMinimumPaymentDue(IEnumerable<SimulatedDebt> debts)
+    public static decimal CalculateMinimumMonthlyDebtPayments(IEnumerable<SimulatedDebt> debts)
     {
         return RoundMoney(debts
             .Where(x => x.Balance > 0)

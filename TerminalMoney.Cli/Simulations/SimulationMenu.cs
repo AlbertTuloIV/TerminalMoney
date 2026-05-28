@@ -58,10 +58,12 @@ public class SimulationMenu(TMDbContext dbContext)
     {
         var takeHomePay = Prompts.PromptTakeHomePayPerPayPeriod(profile);
         var monthlyIncome = SimulationEngine.GetMonthlyInce(profile, takeHomePay);
+        var monthlyDebtPayments = SimulationEngine.CalculateMinimumMonthlyDebtPayments(SimulationEngine.BuildDebts(profile));
 
         AnsiConsole.MarkupLine($"Estimated monthly income: [green]{monthlyIncome:C}[/]");
+        AnsiConsole.MarkupLine($"Saved minimum monthly debt payments: [yellow]{monthlyDebtPayments:C}[/]");
 
-        var monthlyLivingExpenses = Prompts.PromptMoney("What is your normal living cost, not including current financial obligations?");
+        var monthlyLivingExpenses = Prompts.PromptMoney("What are your normal monthly living expenses? Do not include debt payments; TerminalMoney will add saved minimum payments automatically.");
         var currentSavings = Prompts.PromptMoney("How much do you currently have saved?");
         var targetSavings = Prompts.PromptMoney("What savings amount do you want to reach?");
 
@@ -69,6 +71,7 @@ public class SimulationMenu(TMDbContext dbContext)
         {
             MonthlyIncome = monthlyIncome,
             MonthlyLivingExpenses = monthlyLivingExpenses,
+            MonthlyDebtPayments = monthlyDebtPayments,
             StartingSavings = currentSavings,
             TargetSavings = targetSavings
         });
@@ -111,12 +114,13 @@ public class SimulationMenu(TMDbContext dbContext)
         AnsiConsole.MarkupLine(result.CanReachGoal ? "[green]Savings simulation complete.[/]" : "[yellow]Saving Simulation Warning.[/]");
         AnsiConsole.MarkupLine(result.Message);
 
-        var availableForSavings = Math.Max(0, monthlyIncome - monthlyLivingExpenses);
-        var remainder = Math.Max(0, monthlyIncome - monthlyLivingExpenses - availableForSavings);
+        var availableForSavings = Math.Max(0, result.MonthlyAvailableForSavings);
+        var remainder = Math.Max(0, monthlyIncome - result.TotalMonthlyExpenses - availableForSavings);
 
         AnsiConsole.Write(new BreakdownChart()
             .Width(80)
             .AddItem("Living Expenses", (double)monthlyLivingExpenses, Color.Blue)
+            .AddItem("Minimum Debt Payments", (double)result.MonthlyDebtPayments, Color.Red)
             .AddItem("Savings", (double)availableForSavings, Color.Green)
             .AddItem("Remaining", (double)remainder, Color.Grey));
 
@@ -127,11 +131,18 @@ public class SimulationMenu(TMDbContext dbContext)
 
         summary.AddRow("Monthly Income", monthlyIncome.ToString("C"));
         summary.AddRow("Monthly Living Expenses", monthlyLivingExpenses.ToString("C"));
+        summary.AddRow("Minimum Debt Payments", result.MonthlyDebtPayments.ToString("C"));
+        summary.AddRow("Total Monthly Expenses", result.TotalMonthlyExpenses.ToString("C"));
         summary.AddRow("Available For Savings", result.MonthlyAvailableForSavings.ToString("C"));
         summary.AddRow("Months to goal", result.CanReachGoal ? result.MonthsToGoal.ToString() : "Not reachable.");
 
         AnsiConsole.Write(summary);
-        WritePaycheckOutline("Savings paycheck outline", profile, ("Living Expenses", monthlyLivingExpenses), ("Savings contribution", Math.Max(0, result.MonthlyAvailableForSavings)));
+        WritePaycheckOutline(
+            "Savings paycheck outline",
+            profile,
+            ("Living Expenses", monthlyLivingExpenses),
+            ("Minimum Debt Payments", result.MonthlyDebtPayments),
+            ("Savings contribution", Math.Max(0, result.MonthlyAvailableForSavings)));
 
         if(result.Months.Count == 0)
         {
