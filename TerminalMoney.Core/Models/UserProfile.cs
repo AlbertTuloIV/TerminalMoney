@@ -1,5 +1,5 @@
 using TM.Core.Enums;
-
+using TM.Core.Records;
 namespace TM.Core.Models;
 
 public class UserProfile
@@ -22,4 +22,5 @@ public class UserProfile
     public ICollection<CreditCard> CreditCards {get;set;} = [];
     public ICollection<DebtAccount> DebtAccounts {get;set;} = [];
     public ICollection<PaycheckSample> PaycheckSamples {get;set;} = [];
+    public ICollection<BalanceRecord> BalanceRecords {get;set;} = [];
 }

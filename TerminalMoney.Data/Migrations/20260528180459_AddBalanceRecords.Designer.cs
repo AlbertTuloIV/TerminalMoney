@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TM.Data.Persistence;
 
@@ -10,9 +11,11 @@ using TM.Data.Persistence;
 namespace TerminalMoney.Data.Migrations
 {
     [DbContext(typeof(TMDbContext))]
-    partial class TMDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260528180459_AddBalanceRecords")]
+    partial class AddBalanceRecords
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.8");

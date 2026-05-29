@@ -2,6 +2,7 @@
 using Spectre.Console;
 using TM.Cli.Setup;
 using TM.Cli.Simulations;
+using TM.Cli.Records;
 using TM.Data.Persistence;
 
 AnsiConsole.Write(
@@ -17,6 +18,7 @@ await dbContext.Database.MigrateAsync();
 var setupWizard = new SetupWizard(dbContext);
 var settingsMenu = new SettingsMenu(dbContext, setupWizard);
 var simulationMenu = new SimulationMenu(dbContext);
+var recordMenu = new RecordMenu(dbContext);
 
 if (!await setupWizard.HasCompletedSetupAsync())
 {
@@ -30,6 +32,7 @@ while (true)
             .Title("What do you want to do?")
             .AddChoices([
                 "Dashboard",
+                "Record",
                 "Simulation",
                 "Settings",
                 "Exit"
@@ -39,6 +42,9 @@ while (true)
     {
         case "Dashboard":
             await settingsMenu.ShowCurrentSetupAsync();
+            break;
+        case "Record":
+            await recordMenu.ShowAsync();
             break;
         case "Simulation":
             await simulationMenu.ShowAsync();
